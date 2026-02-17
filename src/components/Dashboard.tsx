@@ -21,13 +21,13 @@ interface DashboardProps {
 }
 
 const COLORS = [
-    '#2563eb', // Blue-600
-    '#7c3aed', // Violet-600
-    '#db2777', // Pink-600
-    '#ea580c', // Orange-600
+    '#10b981', // Emerald-500
     '#059669', // Emerald-600
-    '#475569', // Slate-600
-    '#d97706', // Amber-600
+    '#34d399', // Emerald-400
+    '#10b981', // Emerald-500
+    '#059669', // Emerald-600
+    '#34d399', // Emerald-400
+    '#047857', // Emerald-700
 ];
 
 export const Dashboard = ({ expenses }: DashboardProps) => {
@@ -85,7 +85,7 @@ export const Dashboard = ({ expenses }: DashboardProps) => {
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between pb-2">
                         <CardTitle className="text-sm font-medium text-muted-foreground">Top Category</CardTitle>
-                        <PieChart className="w-4 h-4 text-violet-500" />
+                        <PieChart className="w-4 h-4 text-emerald-500" />
                     </CardHeader>
                     <CardContent>
                         <div className="text-2xl font-bold">{stats.topCategory}</div>
@@ -95,7 +95,7 @@ export const Dashboard = ({ expenses }: DashboardProps) => {
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between pb-2">
                         <CardTitle className="text-sm font-medium text-muted-foreground">Total Transactions</CardTitle>
-                        <CreditCard className="w-4 h-4 text-blue-400" />
+                        <CreditCard className="w-4 h-4 text-emerald-400" />
                     </CardHeader>
                     <CardContent>
                         <div className="text-2xl font-bold">{expenses.length}</div>

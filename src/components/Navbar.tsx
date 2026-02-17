@@ -27,7 +27,7 @@ export const Navbar = ({ expenses, onAddClick }: NavbarProps) => {
                         <Download className="w-4 h-4" />
                         Export CSV
                     </Button>
-                    <Button size="sm" onClick={onAddClick} className="flex items-center gap-2">
+                    <Button size="sm" onClick={onAddClick} className="flex items-center gap-2 scale-110 origin-right transition-transform">
                         <Plus className="w-4 h-4" />
                         <span className="hidden xs:inline">Add Expense</span>
                     </Button>
