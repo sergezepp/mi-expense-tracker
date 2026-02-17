@@ -1,49 +1,60 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Expense, Category } from '../types';
+import { Expense } from '../types';
+import {
+    getExpenses,
+    addExpenseAction,
+    deleteExpenseAction,
+    updateExpenseAction
+} from '@/lib/actions';
 
 export const useExpenses = () => {
     const [expenses, setExpenses] = useState<Expense[]>([]);
     const [isLoaded, setIsLoaded] = useState(false);
 
-    // Load from localStorage on mount
+    // Load from Server Action on mount
     useEffect(() => {
-        const saved = localStorage.getItem('expenses');
-        if (saved) {
+        const loadData = async () => {
             try {
-                setExpenses(JSON.parse(saved));
+                const data = await getExpenses();
+                setExpenses(data);
             } catch (e) {
-                console.error('Failed to parse expenses:', e);
+                console.error('Failed to load expenses from server:', e);
+            } finally {
+                setIsLoaded(true);
             }
-        }
-        setIsLoaded(true);
+        };
+        loadData();
     }, []);
 
-    // Save to localStorage when expenses change
-    useEffect(() => {
-        if (isLoaded) {
-            localStorage.setItem('expenses', JSON.stringify(expenses));
+    const addExpense = async (expense: Omit<Expense, 'id' | 'createdAt'>) => {
+        try {
+            const newExpense = await addExpenseAction(expense);
+            setExpenses((prev) => [newExpense, ...prev]);
+        } catch (e) {
+            console.error('Failed to add expense:', e);
         }
-    }, [expenses, isLoaded]);
-
-    const addExpense = (expense: Omit<Expense, 'id' | 'createdAt'>) => {
-        const newExpense: Expense = {
-            ...expense,
-            id: crypto.randomUUID(),
-            createdAt: new Date().toISOString(),
-        };
-        setExpenses((prev) => [newExpense, ...prev]);
     };
 
-    const deleteExpense = (id: string) => {
-        setExpenses((prev) => prev.filter((exp) => exp.id !== id));
+    const deleteExpense = async (id: string) => {
+        try {
+            await deleteExpenseAction(id);
+            setExpenses((prev) => prev.filter((exp) => exp.id !== id));
+        } catch (e) {
+            console.error('Failed to delete expense:', e);
+        }
     };
 
-    const updateExpense = (id: string, updatedData: Partial<Expense>) => {
-        setExpenses((prev) =>
-            prev.map((exp) => (exp.id === id ? { ...exp, ...updatedData } : exp))
-        );
+    const updateExpense = async (id: string, updatedData: Partial<Expense>) => {
+        try {
+            await updateExpenseAction(id, updatedData);
+            setExpenses((prev) =>
+                prev.map((exp) => (exp.id === id ? { ...exp, ...updatedData } : exp))
+            );
+        } catch (e) {
+            console.error('Failed to update expense:', e);
+        }
     };
 
     return {
