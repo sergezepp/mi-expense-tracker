@@ -9,9 +9,10 @@ import { Expense } from '@/types';
 interface NavbarProps {
     expenses: Expense[];
     onAddClick: () => void;
+    onInflowClick: () => void;
 }
 
-export const Navbar = ({ expenses, onAddClick }: NavbarProps) => {
+export const Navbar = ({ expenses, onAddClick, onInflowClick }: NavbarProps) => {
     return (
         <nav className="sticky top-0 z-40 w-full border-b bg-background/80 backdrop-blur-md">
             <div className="container mx-auto px-4 h-16 flex items-center justify-between">
@@ -27,10 +28,20 @@ export const Navbar = ({ expenses, onAddClick }: NavbarProps) => {
                         <Download className="w-4 h-4" />
                         Export CSV
                     </Button>
-                    <Button size="sm" onClick={onAddClick} className="flex items-center gap-2 scale-110 origin-right transition-transform">
-                        <Plus className="w-4 h-4" />
-                        <span className="hidden xs:inline">Add Expense</span>
-                    </Button>
+                    <div className="flex items-center gap-2 ml-2">
+                        <Button
+                            variant="primary"
+                            size="sm"
+                            onClick={onInflowClick}
+                            className="flex items-center gap-1.5 px-3 scale-110 origin-right transition-transform font-bold"
+                        >
+                            <span className="text-primary-foreground font-black">IN</span>
+                        </Button>
+                        <Button size="sm" onClick={onAddClick} className="flex items-center gap-2 scale-110 origin-right transition-transform">
+                            <Plus className="w-4 h-4" />
+                            <span className="hidden xs:inline">Add Expense</span>
+                        </Button>
+                    </div>
                 </div>
             </div>
         </nav>

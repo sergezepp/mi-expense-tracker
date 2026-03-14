@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useMemo } from 'react';
-import { Expense, Category } from '@/types';
+import { Expense, Category, Inflow } from '@/types';
 import { Card, CardHeader, CardTitle, CardContent } from './ui';
 import { formatCurrency } from '@/lib/utils';
 import {
@@ -14,10 +14,11 @@ import {
     ResponsiveContainer,
     Cell
 } from 'recharts';
-import { TrendingUp, CreditCard, PieChart, Wallet } from 'lucide-react';
+import { TrendingUp, CreditCard, PieChart, Wallet, ArrowUpCircle, TrendingDown, Target } from 'lucide-react';
 
 interface DashboardProps {
     expenses: Expense[];
+    inflows: Inflow[];
 }
 
 const COLORS = [
@@ -30,9 +31,10 @@ const COLORS = [
     '#047857', // Emerald-700
 ];
 
-export const Dashboard = ({ expenses }: DashboardProps) => {
+export const Dashboard = ({ expenses, inflows }: DashboardProps) => {
     const stats = useMemo(() => {
-        const total = expenses.reduce((sum, exp) => sum + exp.amount, 0);
+        const totalExpenses = expenses.reduce((sum, exp) => sum + exp.amount, 0);
+        const totalInflows = inflows.reduce((sum, inf) => sum + inf.amount, 0);
 
         // Group by category for chart
         const categoryMap: Record<string, number> = {};
@@ -45,61 +47,108 @@ export const Dashboard = ({ expenses }: DashboardProps) => {
             value,
         })).sort((a, b) => b.value - a.value);
 
-        // Get current month spending
+        // Get current month stats
         const now = new Date();
-        const currentMonthTotal = expenses
+        const currentMonthExpenses = expenses
             .filter((exp) => {
                 const d = new Date(exp.date);
                 return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
             })
             .reduce((sum, exp) => sum + exp.amount, 0);
 
+        const currentMonthInflows = inflows
+            .filter((inf) => {
+                const d = new Date(inf.date);
+                return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+            })
+            .reduce((sum, inf) => sum + inf.amount, 0);
+
         const topCategory = chartData[0]?.name || 'N/A';
 
-        return { total, currentMonthTotal, topCategory, chartData };
-    }, [expenses]);
+        return {
+            totalExpenses,
+            totalInflows,
+            currentMonthExpenses,
+            currentMonthInflows,
+            topCategory,
+            chartData
+        };
+    }, [expenses, inflows]);
 
     return (
         <div className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                <Card>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 animate-in fade-in slide-in-from-top-4 duration-500">
+                <Card className="border-l-4 border-l-primary/50 bg-card/50">
                     <CardHeader className="flex flex-row items-center justify-between pb-2">
-                        <CardTitle className="text-sm font-medium text-muted-foreground">Total Spending</CardTitle>
+                        <CardTitle className="text-sm font-medium text-muted-foreground">Total Balance</CardTitle>
                         <Wallet className="w-4 h-4 text-primary" />
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">{formatCurrency(stats.total)}</div>
+                        <div className="text-2xl font-bold">{formatCurrency(stats.totalInflows - stats.totalExpenses)}</div>
                     </CardContent>
                 </Card>
 
-                <Card>
+                <Card className="border-l-4 border-l-emerald-500/50 bg-card/50">
                     <CardHeader className="flex flex-row items-center justify-between pb-2">
-                        <CardTitle className="text-sm font-medium text-muted-foreground">Current Month</CardTitle>
-                        <TrendingUp className="w-4 h-4 text-emerald-500" />
+                        <CardTitle className="text-sm font-medium text-muted-foreground">All-time Inflow</CardTitle>
+                        <ArrowUpCircle className="w-4 h-4 text-emerald-500" />
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">{formatCurrency(stats.currentMonthTotal)}</div>
+                        <div className="text-2xl font-bold text-emerald-600">+{formatCurrency(stats.totalInflows)}</div>
                     </CardContent>
                 </Card>
 
-                <Card>
+                <Card className="border-l-4 border-l-red-500/50 bg-card/50">
                     <CardHeader className="flex flex-row items-center justify-between pb-2">
-                        <CardTitle className="text-sm font-medium text-muted-foreground">Top Category</CardTitle>
+                        <CardTitle className="text-sm font-medium text-muted-foreground">All-time Expense</CardTitle>
+                        <TrendingDown className="w-4 h-4 text-red-500" />
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-2xl font-bold text-red-600">-{formatCurrency(stats.totalExpenses)}</div>
+                    </CardContent>
+                </Card>
+
+                <Card className="bg-card/50">
+                    <CardHeader className="flex flex-row items-center justify-between pb-2">
+                        <CardTitle className="text-sm font-medium text-muted-foreground">Top spending</CardTitle>
                         <PieChart className="w-4 h-4 text-emerald-500" />
                     </CardHeader>
                     <CardContent>
                         <div className="text-2xl font-bold">{stats.topCategory}</div>
                     </CardContent>
                 </Card>
+            </div>
 
-                <Card>
-                    <CardHeader className="flex flex-row items-center justify-between pb-2">
-                        <CardTitle className="text-sm font-medium text-muted-foreground">Total Transactions</CardTitle>
-                        <CreditCard className="w-4 h-4 text-emerald-400" />
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold">{expenses.length}</div>
-                    </CardContent>
+            {/* Monthly Recap Row */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 animate-in fade-in slide-in-from-top-4 duration-700">
+                <Card className="bg-emerald-50/50 border-emerald-100 flex items-center p-6 gap-4">
+                    <div className="bg-emerald-500 p-3 rounded-full text-white shadow-lg shadow-emerald-200">
+                        <ArrowUpCircle className="w-6 h-6" />
+                    </div>
+                    <div>
+                        <p className="text-sm font-medium text-emerald-600">Total Inflow (Month)</p>
+                        <p className="text-2xl font-bold text-emerald-700">{formatCurrency(stats.currentMonthInflows)}</p>
+                    </div>
+                </Card>
+
+                <Card className="bg-red-50/50 border-red-100 flex items-center p-6 gap-4">
+                    <div className="bg-red-500 p-3 rounded-full text-white shadow-lg shadow-red-200">
+                        <TrendingDown className="w-6 h-6" />
+                    </div>
+                    <div>
+                        <p className="text-sm font-medium text-red-600">Total Expense (Month)</p>
+                        <p className="text-2xl font-bold text-red-700">{formatCurrency(stats.currentMonthExpenses)}</p>
+                    </div>
+                </Card>
+
+                <Card className="bg-primary/5 border-primary/10 flex items-center p-6 gap-4">
+                    <div className="bg-primary p-3 rounded-full text-white shadow-lg shadow-primary/20">
+                        <Target className="w-6 h-6" />
+                    </div>
+                    <div>
+                        <p className="text-sm font-medium text-primary">Monthly Net</p>
+                        <p className="text-2xl font-bold text-primary">{formatCurrency(stats.currentMonthInflows - stats.currentMonthExpenses)}</p>
+                    </div>
                 </Card>
             </div>
 
